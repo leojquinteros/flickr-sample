@@ -1,6 +1,6 @@
 //
 //  ContentViewModel+Delegate.swift
-//  komoot-test
+//  flickr-sample
 //
 //  Created by Leo Quinteros on 12/04/23.
 //
