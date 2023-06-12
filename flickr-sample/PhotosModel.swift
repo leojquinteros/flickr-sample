@@ -1,5 +1,5 @@
 //
-//  FlickrModel.swift
+//  PhotosModel.swift
 //  flickr-sample
 //
 //  Created by Leo Quinteros on 11/04/23.
@@ -7,7 +7,10 @@
 
 import Foundation
 
-struct FlickrResponse: Decodable {
+protocol PhotosResponse: Decodable {}
+protocol SinglePhotoResponse: Decodable, Hashable {}
+
+struct FlickrResponse: PhotosResponse {
     let photos: FlickrPhotos
     let stat: String
 }
@@ -16,7 +19,7 @@ struct FlickrPhotos: Decodable {
     let photo: [FlickrPhoto]
 }
 
-struct FlickrPhoto: Decodable, Hashable {
+struct FlickrPhoto: SinglePhotoResponse {
     let id: String
     let title: String
     let farm: Int

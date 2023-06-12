@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  flickr-sample
+//  komoot-test
 //
 //  Created by Leo Quinteros on 10/04/23.
 //
@@ -12,87 +12,95 @@ struct ContentView: View {
     @StateObject var viewModel: ContentViewModel
     
     var body: some View {
-        if viewModel.shouldShowStartButton {
-            VStack {
-                Button {
-                    viewModel.startUpdatingLocation()
-                } label: {
-                    StartButtonView()
-                }
-                .disabled(viewModel.hasDeniedLocation)
-                if viewModel.hasDeniedLocation {
-                    Text("Please allow the app to track your location in Settings")
-                        .font(.caption2)
-                }
-            }
-            .padding()
-            .onAppear {
-                viewModel.setupLocationManager()
-            }
-        } else {
-            NavigationStack {
-                ScrollView {
+        ZStack {
+            if viewModel.shouldShowStartButton {
+                VStack {
+                    Button {
+                        viewModel.startUpdatingLocation()
+                    } label: {
+                        if viewModel.isLoading {
+                            ProgressView()
+                                .progressViewStyle(.circular)
+                                .tint(.white)
+                        } else {
+                            Text("Start")
+                        }
+                    }
+                    .buttonStyle(StartButton())
+                    .disabled(viewModel.hasDeniedLocation || viewModel.isLoading)
                     if viewModel.hasDeniedLocation {
-                        Text("Please allow the app to track your location in Settings")
-                            .font(.caption2)
-                    } else {
-                        ForEach(viewModel.photos, id: \.self) { photo in
-                            if let photoURL = photo.url {
-                                AsyncImageView(photoURL: photoURL)
+                        AllowLocationView()
+                    }
+                }
+            } else {
+                NavigationStack {
+                    ScrollView {
+                        if viewModel.hasDeniedLocation {
+                            AllowLocationView()
+                        } else {
+                            ForEach(viewModel.photos, id: \.self) { photo in
+                                if let photoURL = photo.url {
+                                    AsyncImageView(photoURL: photoURL)
+                                }
                             }
                         }
-                        if viewModel.hasStoppedUpdatingLocation {
-                            Text("You have stopped sharing your location. Enjoy the photos! You can also 'pull to refresh' and continue...")
-                                .font(.footnote)
+                    }
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarLeading) {
+                            Button {
+                                viewModel.startUpdatingLocation()
+                            } label: {
+                                Text("Restart")
+                            }
+                            .disabled(viewModel.restartButtonDisabled)
+                        }
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Button {
+                                viewModel.stopUpdatingLocation()
+                            } label: {
+                                Text("Stop")
+                            }
+                            .disabled(viewModel.stopButtonDisabled)
                         }
                     }
                 }
-                .padding(.all, 8)
-                .navigationBarItems(trailing:
-                    Button(action: {
-                        viewModel.stopUpdatingLocation()
-                    }) {
-                        Text("Stop")
-                    }
-                    .disabled(viewModel.hasStoppedUpdatingLocation || viewModel.hasDeniedLocation)
-                )
-                .refreshable {
-                    if viewModel.hasStoppedUpdatingLocation && !viewModel.hasDeniedLocation {
-                        viewModel.startUpdatingLocation()
-                    }
-                }
             }
-            .ignoresSafeArea()
-            .onAppear {
-                viewModel.setupLocationManager()
-            }
+        }
+        .padding(.all, 8)
+        .ignoresSafeArea()
+        .onAppear {
+            viewModel.setupLocationManager()
         }
     }
 }
 
-private struct StartButtonView: View {
-        
+private struct StartButton: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .frame(width: 50)
+            .padding()
+            .background(.blue)
+            .foregroundColor(.white)
+            .clipShape(Capsule())
+            .scaleEffect(configuration.isPressed ? 1.2 : 1)
+            .animation(.easeOut(duration: 0.2), value: configuration.isPressed)
+    }
+}
+
+private struct AllowLocationView: View {
     var body: some View {
-        HStack(spacing: 10) {
-            Image(systemName: "arrow.right.square")
-            Text("Start")
-        }
-        .frame(width: 150, height: 40)
-        .foregroundColor(.white)
-        .background(.blue)
+        Text("Please allow the app to track your location in Settings")
+            .font(.caption2)
     }
 }
 
 private struct AsyncImageView: View {
     var photoURL: URL
-    
     var body: some View {
-        AsyncImage (
-            url: photoURL,
-            content: { image in
-                image
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
+        AsyncImage(url: photoURL, content: { image in
+            image
+                .resizable()
+                .aspectRatio(contentMode: .fit)
             },
             placeholder: {
                 ProgressView()
@@ -100,3 +108,4 @@ private struct AsyncImageView: View {
         )
     }
 }
+
