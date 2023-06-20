@@ -38,10 +38,8 @@ struct ContentView: View {
                         if viewModel.hasDeniedLocation {
                             AllowLocationView()
                         } else {
-                            ForEach(viewModel.photos, id: \.self) { photo in
-                                if let photoURL = photo.url {
-                                    AsyncImageView(photoURL: photoURL)
-                                }
+                            ForEach(viewModel.photosURL, id: \.self) { photoURL in
+                                AsyncImageView(photoURL: photoURL)
                             }
                         }
                     }

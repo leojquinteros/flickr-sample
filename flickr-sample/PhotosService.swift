@@ -16,15 +16,36 @@ private enum Constants: String {
 }
 
 protocol PhotosServiceProtocol {
-    func fetch<T: PhotosResponse>(_ type: T.Type, latitude: Double, longitude: Double, completionHandler: @escaping (Result<T, Error>) -> Void)
+    func fetch<T: PhotosResponse>(_ type: T.Type, latitude: Double, longitude: Double) -> AnyPublisher<URL?, Never>
 }
 
 class FlickrService: PhotosServiceProtocol {
-    
-    private var cancellables = Set<AnyCancellable>()
-    
-    func fetch<T>(_ type: T.Type, latitude: Double, longitude: Double, completionHandler: @escaping (Result<T, Error>) -> Void) where T: PhotosResponse {
         
+    func fetch<T>(_ type: T.Type, latitude: Double, longitude: Double) -> AnyPublisher<URL?, Never> where T: PhotosResponse {
+        guard let url = url(latitude: latitude, longitude: longitude) else {
+            return Just(nil).eraseToAnyPublisher()
+        }
+        return URLSession.shared.dataTaskPublisher(for: url)
+            .map(\.data)
+            .decode(type: FlickrResponse.self, decoder: JSONDecoder())
+            .map(\.photos.photo.first?.url)
+            .replaceError(with: nil)
+            .receive(on: RunLoop.main)
+            .eraseToAnyPublisher()
+    }
+    
+    private func url(latitude: Double, longitude: Double) -> URL? {
+        var endpoint = Constants.BASE_URL.rawValue
+        endpoint += "&api_key=\(Constants.FLICKR_API_KEY.rawValue)"
+        endpoint += "&lat=\(latitude)"
+        endpoint += "&lon=\(longitude)"
+        endpoint += "&per_page=\(Constants.PHOTOS_MAX.rawValue)"
+        endpoint += "&format=\(Constants.PHOTOS_FORMAT.rawValue)"
+        endpoint += "&nojsoncallback=1"
+        return URL(string: endpoint)
+    }
+}
+
 //        guard let url = url(latitude: latitude, longitude: longitude) else {
 //            return
 //        }
@@ -42,16 +63,3 @@ class FlickrService: PhotosServiceProtocol {
 //                completionHandler(.success(result as! T))
 //            })
 //            .store(in: &cancellables)
-    }
-
-    private func url(latitude: Double, longitude: Double) -> URL? {
-        var endpoint = Constants.BASE_URL.rawValue
-        endpoint += "&api_key=\(Constants.FLICKR_API_KEY.rawValue)"
-        endpoint += "&lat=\(latitude)"
-        endpoint += "&lon=\(longitude)"
-        endpoint += "&per_page=\(Constants.PHOTOS_MAX.rawValue)"
-        endpoint += "&format=\(Constants.PHOTOS_FORMAT.rawValue)"
-        endpoint += "&nojsoncallback=1"
-        return URL(string: endpoint)
-    }
-}

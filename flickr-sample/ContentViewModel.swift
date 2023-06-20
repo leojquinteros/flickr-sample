@@ -18,7 +18,7 @@ class ContentViewModel: NSObject, ObservableObject {
     private var locationManager: CLLocationManager
     private var photosService: PhotosServiceProtocol
  
-    @Published var photos: [FlickrPhoto] = []
+    @Published var photosURL: [URL] = []
     @Published var hasStoppedUpdatingLocation: Bool = false
     @Published var hasDeniedLocation: Bool = false
     @Published var isLoading: Bool = false
@@ -49,7 +49,7 @@ class ContentViewModel: NSObject, ObservableObject {
     }
     
     var shouldShowStartButton: Bool {
-        photos.count == 0
+        photosURL.count == 0
     }
     
     var restartButtonDisabled: Bool {
@@ -62,7 +62,7 @@ class ContentViewModel: NSObject, ObservableObject {
     
     public func startUpdatingLocation() {
         isLoading = true
-        photos = []
+        photosURL = []
         hasStoppedUpdatingLocation = false
         locationManager.startUpdatingLocation()
     }
@@ -88,14 +88,22 @@ class ContentViewModel: NSObject, ObservableObject {
     }
 
     private func fetch(latitude: CLLocationDegrees, longitude: CLLocationDegrees) {
-//        photosService.fetch(FlickrResponse.self, latitude: latitude, longitude: longitude) { result, error in
-//            guard let self, let photo = result.photos.photo.first else {
-//                return
-//            }
-//            if !self.photos.contains(photo) {
-//                self.photos.insert(photo, at: 0)
-//            }
-//        }
+        photosService.fetch(FlickrResponse.self, latitude: latitude, longitude: longitude)
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .finished:
+                  break
+                case .failure(_):
+                    // error handling
+                    return
+                }
+            }, receiveValue: { [weak self] result in
+                guard let self, let result else { return }
+                if !self.photosURL.contains(result) {
+                    self.photosURL.insert(result, at: 0)
+                }
+            })
+            .store(in: &cancellables)
     }
 }
 
