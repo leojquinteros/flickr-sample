@@ -37,6 +37,7 @@ class ContentViewModel: NSObject, ObservableObject {
 
         locationDidChange
             .removeDuplicates()
+            .receive(on: RunLoop.main)
             .compactMap { $0 }
             .sink { [weak self] location in
                 guard let self else { return }
@@ -89,12 +90,12 @@ class ContentViewModel: NSObject, ObservableObject {
 
     private func fetch(latitude: CLLocationDegrees, longitude: CLLocationDegrees) {
         photosService.fetch(FlickrResponse.self, latitude: latitude, longitude: longitude)
+            .receive(on: RunLoop.main)
             .sink(receiveCompletion: { completion in
                 switch completion {
                 case .finished:
                   break
                 case .failure(_):
-                    // error handling
                     return
                 }
             }, receiveValue: { [weak self] result in
@@ -114,7 +115,6 @@ extension ContentViewModel: CLLocationManagerDelegate {
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        // error handling
         print(error.localizedDescription)
     }
     

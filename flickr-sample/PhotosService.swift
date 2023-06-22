@@ -30,7 +30,6 @@ class FlickrService: PhotosServiceProtocol {
             .decode(type: FlickrResponse.self, decoder: JSONDecoder())
             .map(\.photos.photo.first?.url)
             .replaceError(with: nil)
-            .receive(on: RunLoop.main)
             .eraseToAnyPublisher()
     }
     
@@ -45,21 +44,3 @@ class FlickrService: PhotosServiceProtocol {
         return URL(string: endpoint)
     }
 }
-
-//        guard let url = url(latitude: latitude, longitude: longitude) else {
-//            return
-//        }
-//        URLSession.shared.dataTaskPublisher(for: url)
-//            .map({ $0.data })
-//            .decode(type: FlickrResponse.self, decoder: JSONDecoder())
-//            .sink(receiveCompletion: { completion in
-//                switch completion {
-//                case .finished:
-//                  break
-//                case .failure(let error):
-//                    completionHandler(.failure(error))
-//                }
-//            }, receiveValue: { result in
-//                completionHandler(.success(result as! T))
-//            })
-//            .store(in: &cancellables)
