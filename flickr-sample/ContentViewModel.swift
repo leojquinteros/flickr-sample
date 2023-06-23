@@ -34,6 +34,7 @@ class ContentViewModel: NSObject, ObservableObject {
         self.locationManager.distanceFilter = 100
         self.locationManager.desiredAccuracy = kCLLocationAccuracyBest
         self.locationManager.pausesLocationUpdatesAutomatically = false
+        self.locationManager.allowsBackgroundLocationUpdates = true
 
         locationDidChange
             .removeDuplicates()
