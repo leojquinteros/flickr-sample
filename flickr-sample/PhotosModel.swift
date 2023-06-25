@@ -30,3 +30,9 @@ struct FlickrPhoto: SinglePhotoResponse {
         URL(string: "https://farm\(farm).staticflickr.com/\(server)/\(id)_\(secret).jpg")
     }
 }
+
+enum APIError: LocalizedError {
+  case invalidRequestError
+  case transportError(Error)
+  case decodingError(Error)
+}

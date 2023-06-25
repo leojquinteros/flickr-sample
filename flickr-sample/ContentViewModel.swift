@@ -23,6 +23,9 @@ class ContentViewModel: NSObject, ObservableObject {
     @Published var hasDeniedLocation: Bool = false
     @Published var isLoading: Bool = false
     
+    @Published var isPresentingError: Bool = false
+    @Published var errorMessage: String = ""
+    
     init(
         locationManager: CLLocationManager = CLLocationManager(),
         photosService: PhotosServiceProtocol = FlickrService()
@@ -30,11 +33,8 @@ class ContentViewModel: NSObject, ObservableObject {
         self.photosService = photosService
         self.locationManager = locationManager
         super.init()
-        self.locationManager.delegate = self
-        self.locationManager.distanceFilter = 100
-        self.locationManager.desiredAccuracy = kCLLocationAccuracyBest
-        self.locationManager.pausesLocationUpdatesAutomatically = false
-        self.locationManager.allowsBackgroundLocationUpdates = true
+        
+        setupLocaton()
 
         locationDidChange
             .removeDuplicates()
@@ -48,6 +48,14 @@ class ContentViewModel: NSObject, ObservableObject {
                 )
             }
             .store(in: &cancellables)
+    }
+    
+    private func setupLocaton() {
+        locationManager.delegate = self
+        locationManager.distanceFilter = 100
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager.pausesLocationUpdatesAutomatically = false
+        locationManager.allowsBackgroundLocationUpdates = true
     }
     
     var shouldShowStartButton: Bool {
@@ -64,6 +72,7 @@ class ContentViewModel: NSObject, ObservableObject {
     
     public func startUpdatingLocation() {
         isLoading = true
+        isPresentingError = false
         photosURL = []
         hasStoppedUpdatingLocation = false
         locationManager.startUpdatingLocation()
@@ -92,11 +101,17 @@ class ContentViewModel: NSObject, ObservableObject {
     private func fetch(latitude: CLLocationDegrees, longitude: CLLocationDegrees) {
         photosService.fetch(FlickrResponse.self, latitude: latitude, longitude: longitude)
             .receive(on: RunLoop.main)
-            .sink(receiveCompletion: { completion in
+            .removeDuplicates()
+            .sink(receiveCompletion: { [weak self] completion in
+                guard let self else { return }
                 switch completion {
                 case .finished:
                   break
-                case .failure(_):
+                case .failure(let error):
+                    print(error.localizedDescription)
+                    self.isLoading = false
+                    self.isPresentingError = true
+                    self.errorMessage = error.localizedDescription
                     return
                 }
             }, receiveValue: { [weak self] result in
@@ -116,7 +131,8 @@ extension ContentViewModel: CLLocationManagerDelegate {
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        print(error.localizedDescription)
+        isPresentingError = true
+        errorMessage = error.localizedDescription
     }
     
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {

@@ -69,6 +69,9 @@ struct ContentView: View {
         .onAppear {
             viewModel.setupLocationManager()
         }
+        .alert(isPresented: $viewModel.isPresentingError) {
+            Alert(title: Text(viewModel.errorMessage))
+        }
     }
 }
 
