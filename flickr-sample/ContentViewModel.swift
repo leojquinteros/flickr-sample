@@ -113,6 +113,9 @@ class ContentViewModel: NSObject, ObservableObject {
                 guard let self else { return }
                 switch completion {
                 case .finished:
+                    self.isLoading = false
+                    self.errorMessage = ""
+                    self.isPresentingError = false
                   break
                 case .failure(let error):
                     self.isLoading = false
