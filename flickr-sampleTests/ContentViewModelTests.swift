@@ -23,10 +23,13 @@ import CoreLocation
         
         viewModel = ContentViewModel(locationManager: locationManagerMock, photosService: photosServiceMock)
     }
+    
+    override func tearDown() {
+        super.tearDown()
+        viewModel = nil
+    }
 
-    func testStartUpdatingLocation_AuthorizedAlways() {
-        locationManagerMock.authorizationStatus = .authorizedAlways
-
+    func testStartUpdatingLocation() {
         viewModel.startUpdatingLocation()
 
         XCTAssertTrue(viewModel.isLoading)
@@ -36,18 +39,21 @@ import CoreLocation
         XCTAssertFalse(viewModel.stopButtonDisabled)
         XCTAssertTrue(viewModel.restartButtonDisabled)
     }
-
-    func testStartUpdatingLocation_Denied() {
+    
+    func testUpdateLocationManager_authorizedAlways() {
+        locationManagerMock.authorizationStatus = .authorizedAlways
+        
+        viewModel.updateLocationManager()
+        
+        XCTAssertFalse(viewModel.hasDeniedLocation)
+    }
+    
+    func testUpdateLocationManager_denied() {
         locationManagerMock.authorizationStatus = .denied
         
-        viewModel.startUpdatingLocation()
+        viewModel.updateLocationManager()
         
-        XCTAssertTrue(viewModel.isLoading)
-        XCTAssertFalse(viewModel.isPresentingError)
-        XCTAssertTrue(viewModel.photosURL.isEmpty)
-
-        XCTAssertFalse(viewModel.stopButtonDisabled)
-        XCTAssertTrue(viewModel.restartButtonDisabled)
+        XCTAssertTrue(viewModel.hasDeniedLocation)
     }
     
     func testStopUpdatingLocation() {
