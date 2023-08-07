@@ -24,7 +24,6 @@ class ContentViewModel: NSObject, ObservableObject {
     @Published var isLoading: Bool = false
     
     @Published var isPresentingError: Bool = false
-    @Published var errorMessage: String = ""
     
     init(
         locationManager: CLLocationManager = CLLocationManager(),
@@ -111,7 +110,6 @@ class ContentViewModel: NSObject, ObservableObject {
                     print(error.localizedDescription)
                     self.isLoading = false
                     self.isPresentingError = true
-                    self.errorMessage = error.localizedDescription
                     return
                 }
             }, receiveValue: { [weak self] result in
@@ -132,7 +130,6 @@ extension ContentViewModel: CLLocationManagerDelegate {
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         isPresentingError = true
-        errorMessage = error.localizedDescription
     }
     
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
