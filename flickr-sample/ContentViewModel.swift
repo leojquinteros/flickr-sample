@@ -12,20 +12,36 @@ import CoreLocation
 @MainActor
 class ContentViewModel: NSObject, ObservableObject {
     
-    private var cancellables = Set<AnyCancellable>()
+    // MARK: - Private Properties
+    private(set) var cancellables = Set<AnyCancellable>()
     private(set) var locationDidChange = PassthroughSubject<CLLocation?, Never>()
-
     private var locationManager: CLLocationManager
     private var photosService: PhotosServiceProtocol
  
+    // MARK: - Published Properties
     @Published var photosURL: [URL] = []
     @Published var hasStoppedUpdatingLocation: Bool = false
     @Published var hasDeniedLocation: Bool = false
     @Published var isLoading: Bool = false
     @Published var isPresentingError: Bool = false
     
+    // MARK: - Properties
     var errorMessage: String = ""
     
+    // MARK: - Computed Properties
+    var shouldShowStartButton: Bool {
+        photosURL.count == 0
+    }
+    
+    var restartButtonDisabled: Bool {
+        !hasStoppedUpdatingLocation && !hasDeniedLocation
+    }
+    
+    var stopButtonDisabled: Bool {
+        hasStoppedUpdatingLocation || hasDeniedLocation
+    }
+    
+    // MARK: - Initializer
     init(
         locationManager: CLLocationManager = CLLocationManager(),
         photosService: PhotosServiceProtocol = FlickrService()
@@ -48,26 +64,8 @@ class ContentViewModel: NSObject, ObservableObject {
             }
             .store(in: &cancellables)
     }
-    
-    private func setupLocationManager() {
-        locationManager.delegate = self
-        locationManager.distanceFilter = 100
-        locationManager.desiredAccuracy = kCLLocationAccuracyBest
-        locationManager.pausesLocationUpdatesAutomatically = false
-        locationManager.allowsBackgroundLocationUpdates = true
-    }
-    
-    var shouldShowStartButton: Bool {
-        photosURL.count == 0
-    }
-    
-    var restartButtonDisabled: Bool {
-        !hasStoppedUpdatingLocation && !hasDeniedLocation
-    }
-    
-    var stopButtonDisabled: Bool {
-        hasStoppedUpdatingLocation || hasDeniedLocation
-    }
+
+    // MARK: - Public Methods
     
     public func startUpdatingLocation() {
         isLoading = true
@@ -82,7 +80,7 @@ class ContentViewModel: NSObject, ObservableObject {
         hasStoppedUpdatingLocation = true
     }
     
-    func updateLocationManager() {
+    public func updateLocationManager() {
         switch locationManager.authorizationStatus {
         case .authorizedAlways, .authorizedWhenInUse:
             hasDeniedLocation = false
@@ -96,7 +94,17 @@ class ContentViewModel: NSObject, ObservableObject {
             break
         }
     }
+    
+    // MARK: - Private Methods
 
+    private func setupLocationManager() {
+        locationManager.delegate = self
+        locationManager.distanceFilter = 100
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager.pausesLocationUpdatesAutomatically = false
+        locationManager.allowsBackgroundLocationUpdates = true
+    }
+    
     private func fetch(latitude: CLLocationDegrees, longitude: CLLocationDegrees) {
         photosService.fetch(FlickrResponse.self, latitude: latitude, longitude: longitude)
             .receive(on: RunLoop.main)
@@ -121,6 +129,8 @@ class ContentViewModel: NSObject, ObservableObject {
             .store(in: &cancellables)
     }
 }
+
+// MARK: - Extensions
 
 extension ContentViewModel: CLLocationManagerDelegate {
     
