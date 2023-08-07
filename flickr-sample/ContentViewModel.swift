@@ -33,7 +33,7 @@ class ContentViewModel: NSObject, ObservableObject {
         self.locationManager = locationManager
         super.init()
         
-        setupLocaton()
+        setupLocationManager()
 
         locationDidChange
             .removeDuplicates()
@@ -49,7 +49,7 @@ class ContentViewModel: NSObject, ObservableObject {
             .store(in: &cancellables)
     }
     
-    private func setupLocaton() {
+    private func setupLocationManager() {
         locationManager.delegate = self
         locationManager.distanceFilter = 100
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
