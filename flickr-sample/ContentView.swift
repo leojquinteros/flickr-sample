@@ -67,7 +67,7 @@ struct ContentView: View {
         .padding(.all, 8)
         .ignoresSafeArea()
         .onAppear {
-            viewModel.setupLocationManager()
+            viewModel.updateLocationManager()
         }
         .alert(isPresented: $viewModel.isPresentingError) {
             Alert(title: Text("Error has occured. Please try again."))

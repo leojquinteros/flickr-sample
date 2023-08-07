@@ -40,8 +40,7 @@ class ContentViewModel: NSObject, ObservableObject {
             .receive(on: RunLoop.main)
             .compactMap { $0 }
             .sink { [weak self] location in
-                guard let self else { return }
-                self.fetch(
+                self?.fetch(
                     latitude: location.coordinate.latitude,
                     longitude: location.coordinate.longitude
                 )
@@ -82,7 +81,7 @@ class ContentViewModel: NSObject, ObservableObject {
         hasStoppedUpdatingLocation = true
     }
     
-    func setupLocationManager() {
+    func updateLocationManager() {
         switch locationManager.authorizationStatus {
         case .authorizedAlways, .authorizedWhenInUse:
             hasDeniedLocation = false
