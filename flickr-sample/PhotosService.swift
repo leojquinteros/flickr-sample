@@ -16,14 +16,14 @@ private enum Constants: String {
 }
 
 protocol PhotosServiceProtocol {
-    func fetch<T: PhotosResponse>(_ type: T.Type, latitude: Double, longitude: Double) -> AnyPublisher<URL?, Error>
+    func fetch<T: PhotosResponse>(_ type: T.Type, latitude: Double, longitude: Double) -> AnyPublisher<URL?, APIError>
 }
 
 final class FlickrService: PhotosServiceProtocol {
     
     let cache: NSCache<LocationCustomKey, NSString> = .init()
-        
-    func fetch<T>(_ type: T.Type, latitude: Double, longitude: Double) -> AnyPublisher<URL?, Error> where T: PhotosResponse {
+    
+    func fetch<T>(_ type: T.Type, latitude: Double, longitude: Double) -> AnyPublisher<URL?, APIError> where T: PhotosResponse {
         guard let url = url(latitude: latitude, longitude: longitude) else {
             return Fail(error: APIError.invalidRequestError)
                 .eraseToAnyPublisher()
@@ -31,25 +31,33 @@ final class FlickrService: PhotosServiceProtocol {
         let key = LocationCustomKey(latitude, longitude)
         if let cachedURL = cache.object(forKey: key) {
             return Just(URL(string: cachedURL as String))
-                .setFailureType(to: Error.self)
+                .setFailureType(to: APIError.self)
                 .eraseToAnyPublisher()
         } else {
             cache.setObject(url.absoluteString as NSString, forKey: key)
         }
         return URLSession.shared.dataTaskPublisher(for: url)
-            .mapError { error -> Error in
+            .mapError { error -> APIError in
                 return APIError.transportError(error)
             }
             .map(\.data)
             .tryMap { data -> FlickrResponse in
                 do {
                     return try JSONDecoder().decode(FlickrResponse.self, from: data)
-                }
-                catch {
+                } catch {
                     throw APIError.decodingError(error)
                 }
             }
-            .map(\.photos.photo.first?.url)
+            .compactMap { flickrResponse -> URL? in
+                flickrResponse.photos.photo.first?.url
+            }
+            .mapError { error -> APIError in
+                if let apiError = error as? APIError {
+                    return apiError
+                } else {
+                    return APIError.unknown
+                }
+            }
             .eraseToAnyPublisher()
     }
     

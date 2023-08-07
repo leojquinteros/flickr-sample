@@ -25,14 +25,28 @@ struct FlickrPhoto: SinglePhotoResponse {
     let farm: Int
     let server: String
     let secret: String
-
+    
     var url: URL? {
         URL(string: "https://farm\(farm).staticflickr.com/\(server)/\(id)_\(secret).jpg")
     }
 }
 
 enum APIError: LocalizedError {
-  case invalidRequestError
-  case transportError(Error)
-  case decodingError(Error)
+    case unknown
+    case invalidRequestError
+    case transportError(Error)
+    case decodingError(Error)
+    
+    var localizedDescription: String {
+        switch self {
+        case .invalidRequestError:
+            return "Invalid Request"
+        case .transportError(let error):
+            return "Transport Error: \(error.localizedDescription)"
+        case .decodingError(let error):
+            return "Decoding Error: \(error.localizedDescription)"
+        case .unknown:
+            return "A generic error has occurred. Please try again."
+        }
+    }
 }

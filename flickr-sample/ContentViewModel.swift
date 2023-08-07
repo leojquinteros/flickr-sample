@@ -14,7 +14,7 @@ class ContentViewModel: NSObject, ObservableObject {
     
     private var cancellables = Set<AnyCancellable>()
     private(set) var locationDidChange = PassthroughSubject<CLLocation?, Never>()
-    
+
     private var locationManager: CLLocationManager
     private var photosService: PhotosServiceProtocol
  
@@ -22,8 +22,9 @@ class ContentViewModel: NSObject, ObservableObject {
     @Published var hasStoppedUpdatingLocation: Bool = false
     @Published var hasDeniedLocation: Bool = false
     @Published var isLoading: Bool = false
-    
     @Published var isPresentingError: Bool = false
+    
+    var errorMessage: String = ""
     
     init(
         locationManager: CLLocationManager = CLLocationManager(),
@@ -106,8 +107,8 @@ class ContentViewModel: NSObject, ObservableObject {
                 case .finished:
                   break
                 case .failure(let error):
-                    print(error.localizedDescription)
                     self.isLoading = false
+                    self.errorMessage = error.localizedDescription
                     self.isPresentingError = true
                     return
                 }
@@ -128,6 +129,7 @@ extension ContentViewModel: CLLocationManagerDelegate {
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        errorMessage = APIError.unknown.localizedDescription
         isPresentingError = true
     }
     
