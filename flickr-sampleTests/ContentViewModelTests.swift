@@ -16,17 +16,12 @@ import CoreLocation
     var locationManagerMock: CLLocationManagerMock!
     var photosServiceMock: FlickrServiceMock!
     
-    override func setUpWithError() throws {
-        try super.setUpWithError()
+    override func setUp() {
+        super.setUp()
         locationManagerMock = CLLocationManagerMock()
         photosServiceMock = FlickrServiceMock()
         
         viewModel = ContentViewModel(locationManager: locationManagerMock, photosService: photosServiceMock)
-    }
-    
-    override func tearDown() {
-        super.tearDown()
-        viewModel = nil
     }
 
     func testStartUpdatingLocation() {
