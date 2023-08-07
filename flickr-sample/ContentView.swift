@@ -70,7 +70,7 @@ struct ContentView: View {
             viewModel.updateLocationManager()
         }
         .alert(isPresented: $viewModel.isPresentingError) {
-            Alert(title: Text("Error has occured. Please try again."))
+            Alert(title: Text("Error has occurred. Please try again."))
         }
     }
 }
