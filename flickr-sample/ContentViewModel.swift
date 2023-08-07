@@ -15,7 +15,7 @@ class ContentViewModel: NSObject, ObservableObject {
     // MARK: - Private Properties
     private(set) var cancellables = Set<AnyCancellable>()
     private(set) var locationDidChange = PassthroughSubject<CLLocation?, Never>()
-    private var locationManager: CLLocationManager
+    private var locationManager: CLLocationManagerProtocol
     private var photosService: PhotosServiceProtocol
  
     // MARK: - Published Properties
@@ -43,7 +43,7 @@ class ContentViewModel: NSObject, ObservableObject {
     
     // MARK: - Initializer
     init(
-        locationManager: CLLocationManager = CLLocationManager(),
+        locationManager: CLLocationManagerProtocol = CLLocationManager(),
         photosService: PhotosServiceProtocol = FlickrService()
     ) {
         self.photosService = photosService

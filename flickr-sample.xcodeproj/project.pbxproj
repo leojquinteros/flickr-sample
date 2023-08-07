@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		853932AA2A814FE100014A01 /* CLLocationManagerProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 853932A92A814FE100014A01 /* CLLocationManagerProtocol.swift */; };
 		854631FC2A35E1E100FE22E8 /* PhotosService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 854631FB2A35E1E100FE22E8 /* PhotosService.swift */; };
 		85F3EB3A2A35A1F8006A893F /* flickr_sampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85F3EB392A35A1F8006A893F /* flickr_sampleApp.swift */; };
 		85F3EB3C2A35A1F8006A893F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85F3EB3B2A35A1F8006A893F /* ContentView.swift */; };
@@ -37,6 +38,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		853932A92A814FE100014A01 /* CLLocationManagerProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLLocationManagerProtocol.swift; sourceTree = "<group>"; };
 		854631FB2A35E1E100FE22E8 /* PhotosService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosService.swift; sourceTree = "<group>"; };
 		85F3EB362A35A1F8006A893F /* flickr-sample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "flickr-sample.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		85F3EB392A35A1F8006A893F /* flickr_sampleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = flickr_sampleApp.swift; sourceTree = "<group>"; };
@@ -108,6 +110,7 @@
 				85F3EB652A35A267006A893F /* ContentViewModel.swift */,
 				85F3EB662A35A267006A893F /* PhotosModel.swift */,
 				854631FB2A35E1E100FE22E8 /* PhotosService.swift */,
+				853932A92A814FE100014A01 /* CLLocationManagerProtocol.swift */,
 				85F3EB3D2A35A1F9006A893F /* Assets.xcassets */,
 				85F3EB3F2A35A1F9006A893F /* flickr_sample.entitlements */,
 				85F3EB402A35A1F9006A893F /* Preview Content */,
@@ -273,6 +276,7 @@
 				85F3EB682A35A267006A893F /* ContentViewModel.swift in Sources */,
 				85F3EB692A35A267006A893F /* PhotosModel.swift in Sources */,
 				854631FC2A35E1E100FE22E8 /* PhotosService.swift in Sources */,
+				853932AA2A814FE100014A01 /* CLLocationManagerProtocol.swift in Sources */,
 				85F3EB3C2A35A1F8006A893F /* ContentView.swift in Sources */,
 				85F3EB3A2A35A1F8006A893F /* flickr_sampleApp.swift in Sources */,
 			);
