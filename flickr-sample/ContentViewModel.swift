@@ -38,7 +38,7 @@ class ContentViewModel: NSObject, ObservableObject {
 
         locationDidChange
             .removeDuplicates()
-            .receive(on: RunLoop.main)
+            .debounce(for: .seconds(1), scheduler: RunLoop.main)
             .compactMap { $0 }
             .sink { [weak self] location in
                 self?.fetch(
