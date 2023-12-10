@@ -90,7 +90,6 @@ class ContentViewModel: NSObject, ObservableObject {
     private func handleStatus(_ status: CLAuthorizationStatus) {
         switch status {
         case .authorizedAlways, .authorizedWhenInUse:
-            //state = .loading
             break
         case .notDetermined:
             locationManager.requestAlwaysAuthorization()

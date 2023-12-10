@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  komoot-test
+//  flickr-sample
 //
 //  Created by Leo Quinteros on 10/04/23.
 //
@@ -13,7 +13,9 @@ struct ContentView: View {
     
     var body: some View {
         ZStack {
-            if viewModel.shouldShowStartButton {
+            if viewModel.state == .deniedLocation {
+                AllowLocationView()
+            } else if viewModel.shouldShowStartButton {
                 VStack {
                     Button {
                         viewModel.startUpdatingLocation()
@@ -28,19 +30,12 @@ struct ContentView: View {
                     }
                     .buttonStyle(StartButton())
                     .disabled(viewModel.state == .loading)
-                    if viewModel.state == .deniedLocation {
-                        AllowLocationView()
-                    }
                 }
             } else {
                 NavigationStack {
                     ScrollView {
-                        if viewModel.state == .deniedLocation {
-                            AllowLocationView()
-                        } else {
-                            ForEach(viewModel.photosURL, id: \.self) { photoURL in
-                                AsyncImageView(photoURL: photoURL)
-                            }
+                        ForEach(viewModel.photosURL, id: \.self) { photoURL in
+                            AsyncImageView(photoURL: photoURL)
                         }
                     }
                     .toolbar {
@@ -91,6 +86,13 @@ private struct StartButton: ButtonStyle {
 private struct AllowLocationView: View {
     var body: some View {
         Text("Please allow the app to track your location in Settings")
+            .font(.caption2)
+    }
+}
+
+private struct EmptyPhotosView: View {
+    var body: some View {
+        Text("No photos to show")
             .font(.caption2)
     }
 }
