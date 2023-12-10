@@ -14,19 +14,4 @@ enum ViewState: Equatable {
     case deniedLocation
     case stopSharing
     case error(message: String)
-    
-    static func == (lhs: ViewState, rhs: ViewState) -> Bool {
-        switch (lhs, rhs) {
-        case
-            (.loading, .loading),
-            (.fetching, .fetching),
-            (.empty, .empty),
-            (.stopSharing, .stopSharing),
-            (.deniedLocation, .deniedLocation),
-            (.error, .error):
-            return true
-        default:
-            return false
-        }
-    }
 }

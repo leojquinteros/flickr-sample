@@ -8,7 +8,9 @@
 import Foundation
 
 protocol PhotosResponse: Decodable {}
-protocol SinglePhotoResponse: Decodable, Hashable {}
+protocol SinglePhotoResponse: Decodable, Hashable {
+    var url: URL? { get }
+}
 
 struct FlickrResponse: PhotosResponse {
     let photos: FlickrPhotos
@@ -19,13 +21,15 @@ struct FlickrPhotos: Decodable {
     let photo: [FlickrPhoto]
 }
 
-struct FlickrPhoto: SinglePhotoResponse {
+struct FlickrPhoto {
     let id: String
     let title: String
     let farm: Int
     let server: String
     let secret: String
-    
+}
+
+extension FlickrPhoto: SinglePhotoResponse {
     var url: URL? {
         URL(string: "https://farm\(farm).staticflickr.com/\(server)/\(id)_\(secret).jpg")
     }
