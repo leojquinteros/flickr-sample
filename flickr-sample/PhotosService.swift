@@ -16,49 +16,43 @@ private enum Constants: String {
 }
 
 protocol PhotosServiceProtocol {
-    func fetch<T: PhotosResponse>(_ type: T.Type, latitude: Double, longitude: Double) -> AnyPublisher<URL?, APIError>
+    func fetch<T: PhotosResponse>(_ type: T.Type, latitude: Double, longitude: Double) async -> Result<URL?, APIError>
 }
 
 final class FlickrService: PhotosServiceProtocol {
     
-    let cache: NSCache<LocationCustomKey, NSString> = .init()
+    private let jsonDecoder: JSONDecoder
+    private let cache: NSCache<LocationCustomKey, NSString>
     
-    func fetch<T>(_ type: T.Type, latitude: Double, longitude: Double) -> AnyPublisher<URL?, APIError> where T: PhotosResponse {
+    init(jsonDecoder: JSONDecoder = JSONDecoder()) {
+        self.jsonDecoder = jsonDecoder
+        self.cache = .init()
+    }
+    
+    func fetch<T>(_ type: T.Type, latitude: Double, longitude: Double) async -> Result<URL?, APIError> where T: PhotosResponse {
         guard let url = url(latitude: latitude, longitude: longitude) else {
-            return Fail(error: APIError.invalidRequestError)
-                .eraseToAnyPublisher()
+            return .failure(.invalidRequestError)
         }
         let key = LocationCustomKey(latitude, longitude)
         if let cachedURL = cache.object(forKey: key) {
-            return Just(URL(string: cachedURL as String))
-                .setFailureType(to: APIError.self)
-                .eraseToAnyPublisher()
+            let url = URL(string: cachedURL as String)
+            return .success(url)
         } else {
             cache.setObject(url.absoluteString as NSString, forKey: key)
         }
-        return URLSession.shared.dataTaskPublisher(for: url)
-            .mapError { error -> APIError in
-                return APIError.transportError(error)
-            }
-            .map(\.data)
-            .tryMap { data -> FlickrResponse in
-                do {
-                    return try JSONDecoder().decode(FlickrResponse.self, from: data)
-                } catch {
-                    throw APIError.decodingError(error)
-                }
-            }
-            .compactMap { flickrResponse -> URL? in
-                flickrResponse.photos.photo.first?.url
-            }
-            .mapError { error -> APIError in
-                if let apiError = error as? APIError {
-                    return apiError
-                } else {
-                    return APIError.unknown
-                }
-            }
-            .eraseToAnyPublisher()
+        var data: Data
+        do {
+            data = try await URLSession.shared.data(from: url).0
+        } catch {
+            return .failure(.transportError(error))
+        }
+        var flickrResponse: FlickrResponse
+        do {
+            flickrResponse = try jsonDecoder.decode(FlickrResponse.self, from: data)
+        } catch {
+            return .failure(.decodingError(error))
+        }
+        return .success(flickrResponse.photos.photo.first?.url)
     }
     
     private func url(latitude: Double, longitude: Double) -> URL? {

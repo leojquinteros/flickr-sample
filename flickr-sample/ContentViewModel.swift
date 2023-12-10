@@ -61,14 +61,17 @@ class ContentViewModel: NSObject, ObservableObject {
     
     private func setupLocationSubject() {
         locationDidChange
+            .receive(on: RunLoop.main)
             .removeDuplicates()
             .debounce(for: .seconds(1), scheduler: RunLoop.main)
             .compactMap { $0 }
             .sink { [weak self] location in
-                self?.fetch(
-                    latitude: location.coordinate.latitude,
-                    longitude: location.coordinate.longitude
-                )
+                Task {
+                    await self?.fetch(
+                        latitude: location.coordinate.latitude,
+                        longitude: location.coordinate.longitude
+                    )
+                }
             }
             .store(in: &cancellables)
     }
@@ -102,27 +105,17 @@ class ContentViewModel: NSObject, ObservableObject {
         }
     }
     
-    private func fetch(latitude: CLLocationDegrees, longitude: CLLocationDegrees) {
-        photosService.fetch(FlickrResponse.self, latitude: latitude, longitude: longitude)
-            .receive(on: RunLoop.main)
-            .removeDuplicates()
-            .sink(receiveCompletion: { [weak self] completion in
-                guard let self else { return }
-                switch completion {
-                case .finished:
-                    state = .fetching
-                    break
-                case .failure(let error):
-                    state = .error(message: error.localizedDescription)
-                    return
-                }
-            }, receiveValue: { [weak self] result in
-                guard let self, let result else { return }
-                if !self.photosURL.contains(result) {
-                    self.photosURL.insert(result, at: 0)
-                }
-            })
-            .store(in: &cancellables)
+    private func fetch(latitude: CLLocationDegrees, longitude: CLLocationDegrees) async {
+        let response = await photosService.fetch(FlickrResponse.self, latitude: latitude, longitude: longitude)
+        switch response {
+        case .failure(let error):
+            state = .error(message: error.localizedDescription)
+        case .success(let url):
+            state = .fetching
+            if let url, !photosURL.contains(url) {
+                photosURL.insert(url, at: 0)
+            }
+        }
     }
 }
 
