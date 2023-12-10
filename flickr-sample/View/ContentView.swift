@@ -14,30 +14,19 @@ struct ContentView: View {
     var body: some View {
         ZStack {
             switch viewModel.state {
-            case .deniedLocation:
-                Text("Please allow the app to track your location in Settings")
-                    .font(.caption2)
-            case .ready:
-                VStack {
-                    Button {
-                        viewModel.startUpdatingLocation()
-                    } label: {
-                        Text("Start")
-                    }
-                    .buttonStyle(StartButton())
-                    .disabled(viewModel.state == .loading)
-                }
             case .loading:
-                ProgressView()
-                    .progressViewStyle(.circular)
-                    .tint(.primary)
-                
+                LoadingView()
+            case .deniedLocation:
+                AllowLocationView()
             case .error(let message):
-                VStack {
-                    Text("Error‼️")
-                        .font(.title)
-                    Text(message)
-                        .font(.caption2)
+                ErrorView(message: message)
+            case .ready:
+                StartButton(title: "Start") {
+                    viewModel.startUpdatingLocation()
+                }
+            case .stopSharing:
+                StartButton(title: "Resume") {
+                    viewModel.startUpdatingLocation()
                 }
             case .loaded(let photosURL):
                 NavigationStack {
@@ -47,46 +36,51 @@ struct ContentView: View {
                         }
                     }
                     .toolbar {
-                        ToolbarItem(placement: .navigationBarLeading) {
-                            Button {
-                                viewModel.startUpdatingLocation()
-                            } label: {
-                                Text("Resume")
-                            }
-                            .disabled(viewModel.state != .stopSharing)
-                        }
                         ToolbarItem(placement: .navigationBarTrailing) {
                             Button {
                                 viewModel.stopUpdatingLocation()
                             } label: {
                                 Text("Stop")
                             }
-                            .disabled(viewModel.state == .stopSharing)
                         }
                     }
                 }
-            default:
-                EmptyView()
             }
         }
         .padding(.all, 8)
         .ignoresSafeArea()
+        .animation(.default, value: viewModel.state)
         .onAppear {
             viewModel.updateLocationManager()
         }
     }
 }
 
-private struct StartButton: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .frame(width: 50)
-            .padding()
-            .background(.blue)
-            .foregroundColor(.white)
-            .clipShape(Capsule())
-            .scaleEffect(configuration.isPressed ? 1.2 : 1)
-            .animation(.easeOut(duration: 0.2), value: configuration.isPressed)
+private struct LoadingView: View {
+    var body: some View {
+        ProgressView()
+            .progressViewStyle(.circular)
+            .tint(.primary)
+    }
+}
+
+private struct ErrorView: View {
+    let message: String
+    
+    var body: some View {
+        VStack {
+            Text("Error‼️")
+                .font(.title)
+            Text(message)
+                .font(.caption2)
+        }
+    }
+}
+
+private struct AllowLocationView: View {
+    var body: some View {
+        Text("Please allow the app to track your location in Settings")
+            .font(.caption2)
     }
 }
 
@@ -99,9 +93,35 @@ private struct AsyncImageView: View {
                 .aspectRatio(contentMode: .fit)
             },
             placeholder: {
-                ProgressView()
+                LoadingView()
             }
         )
     }
 }
 
+private struct StartButton: View {
+    let title: String
+    let action: () -> Void
+    
+    var body: some View {
+        Button {
+            action()
+        } label: {
+            Text(title)
+        }
+        .buttonStyle(StartButtonStyle())
+    }
+}
+
+private struct StartButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .frame(width: 100)
+            .padding()
+            .background(.green)
+            .foregroundColor(.white)
+            .clipShape(Capsule())
+            .scaleEffect(configuration.isPressed ? 1.2 : 1)
+            .animation(.easeOut(duration: 0.2), value: configuration.isPressed)
+    }
+}
