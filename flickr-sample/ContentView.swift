@@ -18,7 +18,7 @@ struct ContentView: View {
                     Button {
                         viewModel.startUpdatingLocation()
                     } label: {
-                        if viewModel.isLoading {
+                        if viewModel.state == .loading {
                             ProgressView()
                                 .progressViewStyle(.circular)
                                 .tint(.white)
@@ -27,15 +27,15 @@ struct ContentView: View {
                         }
                     }
                     .buttonStyle(StartButton())
-                    .disabled(viewModel.hasDeniedLocation || viewModel.isLoading)
-                    if viewModel.hasDeniedLocation {
+                    .disabled(viewModel.state == .loading)
+                    if viewModel.state == .deniedLocation {
                         AllowLocationView()
                     }
                 }
             } else {
                 NavigationStack {
                     ScrollView {
-                        if viewModel.hasDeniedLocation {
+                        if viewModel.state == .deniedLocation {
                             AllowLocationView()
                         } else {
                             ForEach(viewModel.photosURL, id: \.self) { photoURL in
@@ -48,9 +48,9 @@ struct ContentView: View {
                             Button {
                                 viewModel.startUpdatingLocation()
                             } label: {
-                                Text("Restart")
+                                Text("Resume")
                             }
-                            .disabled(viewModel.restartButtonDisabled)
+                            .disabled(viewModel.state == .fetching)
                         }
                         ToolbarItem(placement: .navigationBarTrailing) {
                             Button {
@@ -58,7 +58,7 @@ struct ContentView: View {
                             } label: {
                                 Text("Stop")
                             }
-                            .disabled(viewModel.stopButtonDisabled)
+                            .disabled(viewModel.state == .stopSharing)
                         }
                     }
                 }
@@ -70,7 +70,7 @@ struct ContentView: View {
             viewModel.updateLocationManager()
         }
         .alert(isPresented: $viewModel.isPresentingError) {
-            Alert(title: Text("Error"), message: Text(viewModel.errorMessage))
+            Alert(title: Text("Error"), message: Text(viewModel.errorMessage ?? ""))
         }
     }
 }

@@ -12,36 +12,33 @@ import CoreLocation
 @MainActor
 class ContentViewModel: NSObject, ObservableObject {
     
-    // MARK: - Private Properties
     private(set) var cancellables = Set<AnyCancellable>()
     private(set) var locationDidChange = PassthroughSubject<CLLocation?, Never>()
     private var locationManager: CLLocationManagerProtocol
     private var photosService: PhotosServiceProtocol
- 
-    // MARK: - Published Properties
+    
     @Published var photosURL: [URL] = []
-    @Published var hasStoppedUpdatingLocation: Bool = false
-    @Published var hasDeniedLocation: Bool = false
-    @Published var isLoading: Bool = false
     @Published var isPresentingError: Bool = false
+    @Published var errorMessage: String? {
+        didSet {
+            isPresentingError = errorMessage != nil
+        }
+    }
+    @Published var state: ViewState = .empty {
+        didSet {
+            switch state {
+            case .error(message: let message):
+                errorMessage = message
+            default:
+                errorMessage = nil
+            }
+        }
+    }
     
-    // MARK: - Properties
-    var errorMessage: String = ""
-    
-    // MARK: - Computed Properties
     var shouldShowStartButton: Bool {
         photosURL.count == 0
     }
     
-    var restartButtonDisabled: Bool {
-        !hasStoppedUpdatingLocation && !hasDeniedLocation
-    }
-    
-    var stopButtonDisabled: Bool {
-        hasStoppedUpdatingLocation || hasDeniedLocation
-    }
-    
-    // MARK: - Initializer
     init(
         locationManager: CLLocationManagerProtocol = CLLocationManager(),
         photosService: PhotosServiceProtocol = FlickrService()
@@ -51,7 +48,18 @@ class ContentViewModel: NSObject, ObservableObject {
         super.init()
         
         setupLocationManager()
-
+        setupLocationSubject()
+    }
+    
+    private func setupLocationManager() {
+        locationManager.delegate = self
+        locationManager.distanceFilter = 100
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager.pausesLocationUpdatesAutomatically = false
+        locationManager.allowsBackgroundLocationUpdates = true
+    }
+    
+    private func setupLocationSubject() {
         locationDidChange
             .removeDuplicates()
             .debounce(for: .seconds(1), scheduler: RunLoop.main)
@@ -64,45 +72,35 @@ class ContentViewModel: NSObject, ObservableObject {
             }
             .store(in: &cancellables)
     }
-
-    // MARK: - Public Methods
     
     public func startUpdatingLocation() {
-        isLoading = true
-        isPresentingError = false
-        photosURL = []
-        hasStoppedUpdatingLocation = false
         locationManager.startUpdatingLocation()
+        state = .loading
     }
     
     public func stopUpdatingLocation() {
         locationManager.stopUpdatingLocation()
-        hasStoppedUpdatingLocation = true
+        state = .stopSharing
     }
     
     public func updateLocationManager() {
-        switch locationManager.authorizationStatus {
+        handleStatus(locationManager.authorizationStatus)
+    }
+    
+    private func handleStatus(_ status: CLAuthorizationStatus) {
+        switch status {
         case .authorizedAlways, .authorizedWhenInUse:
-            hasDeniedLocation = false
+            //state = .loading
+            break
         case .notDetermined:
             locationManager.requestAlwaysAuthorization()
             break
         case .denied, .restricted:
-            hasDeniedLocation = true
+            state = .deniedLocation
             break
         default:
             break
         }
-    }
-    
-    // MARK: - Private Methods
-
-    private func setupLocationManager() {
-        locationManager.delegate = self
-        locationManager.distanceFilter = 100
-        locationManager.desiredAccuracy = kCLLocationAccuracyBest
-        locationManager.pausesLocationUpdatesAutomatically = false
-        locationManager.allowsBackgroundLocationUpdates = true
     }
     
     private func fetch(latitude: CLLocationDegrees, longitude: CLLocationDegrees) {
@@ -113,14 +111,10 @@ class ContentViewModel: NSObject, ObservableObject {
                 guard let self else { return }
                 switch completion {
                 case .finished:
-                    self.isLoading = false
-                    self.errorMessage = ""
-                    self.isPresentingError = false
-                  break
+                    state = .fetching
+                    break
                 case .failure(let error):
-                    self.isLoading = false
-                    self.errorMessage = error.localizedDescription
-                    self.isPresentingError = true
+                    state = .error(message: error.localizedDescription)
                     return
                 }
             }, receiveValue: { [weak self] result in
@@ -142,23 +136,10 @@ extension ContentViewModel: CLLocationManagerDelegate {
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        errorMessage = APIError.unknown.localizedDescription
-        isPresentingError = true
+        state = .error(message: APIError.unknown.localizedDescription)
     }
     
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
-        switch status {
-        case .notDetermined:
-            locationManager.requestAlwaysAuthorization()
-            break
-        case .authorizedAlways, .authorizedWhenInUse:
-            hasDeniedLocation = false
-            break
-        case .denied:
-            hasDeniedLocation = true
-            break
-        default:
-            break
-        }
+        handleStatus(status)
     }
 }

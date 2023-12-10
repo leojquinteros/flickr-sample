@@ -23,4 +23,3 @@ protocol CLLocationManagerProtocol {
     func startUpdatingLocation()
     func stopUpdatingLocation()
 }
-
