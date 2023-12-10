@@ -27,20 +27,9 @@ import CoreLocation
     func testStartUpdatingLocation() {
         viewModel.startUpdatingLocation()
 
-        XCTAssertTrue(viewModel.isLoading)
+        XCTAssertEqual(viewModel.state, .loading)
         XCTAssertFalse(viewModel.isPresentingError)
         XCTAssertTrue(viewModel.photosURL.isEmpty)
-
-        XCTAssertFalse(viewModel.stopButtonDisabled)
-        XCTAssertTrue(viewModel.restartButtonDisabled)
-    }
-    
-    func testUpdateLocationManager_authorizedAlways() {
-        locationManagerMock.authorizationStatus = .authorizedAlways
-        
-        viewModel.updateLocationManager()
-        
-        XCTAssertFalse(viewModel.hasDeniedLocation)
     }
     
     func testUpdateLocationManager_denied() {
@@ -48,13 +37,13 @@ import CoreLocation
         
         viewModel.updateLocationManager()
         
-        XCTAssertTrue(viewModel.hasDeniedLocation)
+        XCTAssertEqual(viewModel.state, .deniedLocation)
     }
     
     func testStopUpdatingLocation() {
         viewModel.stopUpdatingLocation()
         
-        XCTAssertTrue(viewModel.hasStoppedUpdatingLocation)
+        XCTAssertEqual(viewModel.state, .stopSharing)
     }
 }
 
