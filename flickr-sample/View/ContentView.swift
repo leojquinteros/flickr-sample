@@ -19,7 +19,9 @@ struct ContentView: View {
             case .deniedLocation:
                 AllowLocationView()
             case .error(let message):
-                ErrorView(message: message)
+                ErrorView(message: message) {
+                    viewModel.startUpdatingLocation()
+                }
             case .ready:
                 StartButton(title: "Start") {
                     viewModel.startUpdatingLocation()
@@ -63,16 +65,19 @@ private struct LoadingView: View {
             .tint(.primary)
     }
 }
-
+    
 private struct ErrorView: View {
     let message: String
-    
+    let action: () -> Void
     var body: some View {
-        VStack {
-            Text("Error‼️")
-                .font(.title)
-            Text(message)
-                .font(.caption2)
+        ContentUnavailableView {
+            Label("Unable to show photos", systemImage: "exclamationmark.icloud")
+        } description: {
+            Text("Description: \(message)")
+        } actions: {
+            Button("Try again") {
+                action()
+            }
         }
     }
 }
