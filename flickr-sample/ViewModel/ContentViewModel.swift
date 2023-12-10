@@ -16,28 +16,9 @@ class ContentViewModel: NSObject, ObservableObject {
     private(set) var locationDidChange = PassthroughSubject<CLLocation?, Never>()
     private var locationManager: CLLocationManagerProtocol
     private var photosService: PhotosServiceProtocol
+    private var photosURL: [URL] = []
     
-    @Published var photosURL: [URL] = []
-    @Published var isPresentingError: Bool = false
-    @Published var errorMessage: String? {
-        didSet {
-            isPresentingError = errorMessage != nil
-        }
-    }
-    @Published var state: ViewState = .empty {
-        didSet {
-            switch state {
-            case .error(message: let message):
-                errorMessage = message
-            default:
-                errorMessage = nil
-            }
-        }
-    }
-    
-    var shouldShowStartButton: Bool {
-        photosURL.count == 0
-    }
+    @Published var state: ViewState = .ready
     
     init(
         locationManager: CLLocationManagerProtocol = CLLocationManager(),
@@ -93,6 +74,7 @@ class ContentViewModel: NSObject, ObservableObject {
     private func handleStatus(_ status: CLAuthorizationStatus) {
         switch status {
         case .authorizedAlways, .authorizedWhenInUse:
+            state = .ready
             break
         case .notDetermined:
             locationManager.requestAlwaysAuthorization()
@@ -111,15 +93,15 @@ class ContentViewModel: NSObject, ObservableObject {
         case .failure(let error):
             state = .error(message: error.localizedDescription)
         case .success(let url):
-            state = .fetching
             if let url, !photosURL.contains(url) {
                 photosURL.insert(url, at: 0)
+                state = .loaded(photosURL)
             }
         }
     }
 }
 
-// MARK: - Extensions
+// MARK: - CLLocationManagerDelegate
 
 extension ContentViewModel: CLLocationManagerDelegate {
     
@@ -128,7 +110,7 @@ extension ContentViewModel: CLLocationManagerDelegate {
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        state = .error(message: APIError.unknown.localizedDescription)
+        state = .error(message: error.localizedDescription)
     }
     
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {

@@ -36,7 +36,6 @@ extension FlickrPhoto: SinglePhotoResponse {
 }
 
 enum APIError: LocalizedError {
-    case unknown
     case invalidRequestError
     case transportError(Error)
     case decodingError(Error)
@@ -49,8 +48,6 @@ enum APIError: LocalizedError {
             return "Transport Error: \(error.localizedDescription)"
         case .decodingError(let error):
             return "Decoding Error: \(error.localizedDescription)"
-        case .unknown:
-            return "A generic error has occurred. Please try again."
         }
     }
 }

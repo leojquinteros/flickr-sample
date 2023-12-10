@@ -13,28 +13,36 @@ struct ContentView: View {
     
     var body: some View {
         ZStack {
-            if viewModel.state == .deniedLocation {
-                AllowLocationView()
-            } else if viewModel.shouldShowStartButton {
+            switch viewModel.state {
+            case .deniedLocation:
+                Text("Please allow the app to track your location in Settings")
+                    .font(.caption2)
+            case .ready:
                 VStack {
                     Button {
                         viewModel.startUpdatingLocation()
                     } label: {
-                        if viewModel.state == .loading {
-                            ProgressView()
-                                .progressViewStyle(.circular)
-                                .tint(.white)
-                        } else {
-                            Text("Start")
-                        }
+                        Text("Start")
                     }
                     .buttonStyle(StartButton())
                     .disabled(viewModel.state == .loading)
                 }
-            } else {
+            case .loading:
+                ProgressView()
+                    .progressViewStyle(.circular)
+                    .tint(.primary)
+                
+            case .error(let message):
+                VStack {
+                    Text("Error‼️")
+                        .font(.title)
+                    Text(message)
+                        .font(.caption2)
+                }
+            case .loaded(let photosURL):
                 NavigationStack {
                     ScrollView {
-                        ForEach(viewModel.photosURL, id: \.self) { photoURL in
+                        ForEach(photosURL, id: \.self) { photoURL in
                             AsyncImageView(photoURL: photoURL)
                         }
                     }
@@ -45,7 +53,7 @@ struct ContentView: View {
                             } label: {
                                 Text("Resume")
                             }
-                            .disabled(viewModel.state == .fetching)
+                            .disabled(viewModel.state != .stopSharing)
                         }
                         ToolbarItem(placement: .navigationBarTrailing) {
                             Button {
@@ -57,15 +65,14 @@ struct ContentView: View {
                         }
                     }
                 }
+            default:
+                EmptyView()
             }
         }
         .padding(.all, 8)
         .ignoresSafeArea()
         .onAppear {
             viewModel.updateLocationManager()
-        }
-        .alert(isPresented: $viewModel.isPresentingError) {
-            Alert(title: Text("Error"), message: Text(viewModel.errorMessage ?? ""))
         }
     }
 }
@@ -80,20 +87,6 @@ private struct StartButton: ButtonStyle {
             .clipShape(Capsule())
             .scaleEffect(configuration.isPressed ? 1.2 : 1)
             .animation(.easeOut(duration: 0.2), value: configuration.isPressed)
-    }
-}
-
-private struct AllowLocationView: View {
-    var body: some View {
-        Text("Please allow the app to track your location in Settings")
-            .font(.caption2)
-    }
-}
-
-private struct EmptyPhotosView: View {
-    var body: some View {
-        Text("No photos to show")
-            .font(.caption2)
     }
 }
 

@@ -9,8 +9,8 @@ import Foundation
 
 enum ViewState: Equatable {
     case loading
-    case fetching
-    case empty
+    case ready
+    case loaded(_ photosURL: [URL])
     case deniedLocation
     case stopSharing
     case error(message: String)

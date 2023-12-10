@@ -15,10 +15,6 @@ private enum Constants: String {
     case PHOTOS_FORMAT = "json"
 }
 
-protocol PhotosServiceProtocol {
-    func fetch<T: PhotosResponse>(_ type: T.Type, latitude: Double, longitude: Double) async -> Result<URL?, APIError>
-}
-
 final class FlickrService: PhotosServiceProtocol {
     
     private let jsonDecoder: JSONDecoder
@@ -65,26 +61,4 @@ final class FlickrService: PhotosServiceProtocol {
         endpoint += "&nojsoncallback=1"
         return URL(string: endpoint)
     }
-}
-
-final class LocationCustomKey: NSObject {
-    let lat: Double
-    let long: Double
-    
-    init(_ lat: Double, _ long: Double) {
-        self.lat = lat
-        self.long = long
-    }
-    
-    override func isEqual(_ object: Any?) -> Bool {
-        guard let other = object as? LocationCustomKey else {
-            return false
-        }
-        return lat == other.lat && long == other.long
-    }
-    
-    override var hash: Int {
-        return long.hashValue ^ long.hashValue
-    }
-    
 }
