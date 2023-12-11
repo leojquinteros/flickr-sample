@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import Combine
 
 private enum Constants: String {
     case FLICKR_API_KEY = "e25c841985bee61afa0d8481eea85e9e"
@@ -18,23 +17,14 @@ private enum Constants: String {
 final class FlickrService: PhotosServiceProtocol {
     
     private let jsonDecoder: JSONDecoder
-    private let cache: NSCache<LocationCustomKey, NSString>
     
     init(jsonDecoder: JSONDecoder = JSONDecoder()) {
         self.jsonDecoder = jsonDecoder
-        self.cache = .init()
     }
     
     func fetch<T>(_ type: T.Type, latitude: Double, longitude: Double) async -> Result<URL?, APIError> where T: PhotosResponse {
         guard let url = url(latitude: latitude, longitude: longitude) else {
             return .failure(.invalidRequestError)
-        }
-        let key = LocationCustomKey(latitude, longitude)
-        if let cachedURL = cache.object(forKey: key) {
-            let url = URL(string: cachedURL as String)
-            return .success(url)
-        } else {
-            cache.setObject(url.absoluteString as NSString, forKey: key)
         }
         var data: Data
         do {
