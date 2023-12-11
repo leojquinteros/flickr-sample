@@ -62,6 +62,11 @@ class ContentViewModel: NSObject, ObservableObject {
         state = .loading
     }
     
+    public func resumeUpdatingLocation() {
+        locationManager.startUpdatingLocation()
+        state = .loaded(photosURL)
+    }
+    
     public func stopUpdatingLocation() {
         locationManager.stopUpdatingLocation()
         state = .stopSharing

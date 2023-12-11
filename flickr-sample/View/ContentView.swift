@@ -28,7 +28,7 @@ struct ContentView: View {
                 }
             case .stopSharing:
                 StartButton(title: "Resume") {
-                    viewModel.startUpdatingLocation()
+                    viewModel.resumeUpdatingLocation()
                 }
             case .loaded(let photosURL):
                 NavigationStack {
