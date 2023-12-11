@@ -14,6 +14,10 @@ private enum Constants: String {
     case PHOTOS_FORMAT = "json"
 }
 
+protocol PhotosServiceProtocol {
+    func fetch<T: PhotosResponse>(_ type: T.Type, latitude: Double, longitude: Double) async -> Result<URL?, APIError>
+}
+
 final class FlickrService: PhotosServiceProtocol {
     
     private let jsonDecoder: JSONDecoder
