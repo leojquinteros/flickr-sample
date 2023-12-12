@@ -6,7 +6,6 @@
 //
 
 import XCTest
-import Combine
 import CoreLocation
 @testable import flickr_sample
 
@@ -28,16 +27,28 @@ import CoreLocation
         viewModel.startUpdatingLocation()
 
         XCTAssertEqual(viewModel.state, .loading)
-        XCTAssertFalse(viewModel.isPresentingError)
-        XCTAssertTrue(viewModel.photosURL.isEmpty)
     }
     
-    func testUpdateLocationManager_denied() {
+    func testResumeUpdatingLocation() {
+        viewModel.resumeUpdatingLocation()
+
+        XCTAssertEqual(viewModel.state, .loaded([]))
+    }
+    
+    func testUpdateLocationManagerDenied() {
         locationManagerMock.authorizationStatus = .denied
         
         viewModel.updateLocationManager()
         
         XCTAssertEqual(viewModel.state, .deniedLocation)
+    }
+    
+    func testUpdateLocationManagerAuthorizedAlways() {
+        locationManagerMock.authorizationStatus = .authorizedAlways
+        
+        viewModel.updateLocationManager()
+        
+        XCTAssertEqual(viewModel.state, .ready)
     }
     
     func testStopUpdatingLocation() {
@@ -48,12 +59,10 @@ import CoreLocation
 }
 
 class FlickrServiceMock: PhotosServiceProtocol {
-    func fetch<T>(_ type: T.Type, latitude: Double, longitude: Double) -> AnyPublisher<URL?, flickr_sample.APIError> where T : flickr_sample.PhotosResponse {
+    func fetch<T>(_ type: T.Type, latitude: Double, longitude: Double) async -> Result<URL?, APIError> where T: PhotosResponse {
         
         let mockURL = URL(string: "https://flickr.com/image-url-example.jpg")
-        return Just(mockURL)
-            .setFailureType(to: APIError.self)
-            .eraseToAnyPublisher()
+        return .success(mockURL)
     }
 }
 
@@ -67,10 +76,7 @@ class CLLocationManagerMock: CLLocationManagerProtocol {
     var authorizationStatus: CLAuthorizationStatus = .notDetermined
 
     func requestAlwaysAuthorization() {}
-    
     func requestWhenInUseAuthorization() {}
-    
     func startUpdatingLocation() {}
-    
     func stopUpdatingLocation() {}
 }
