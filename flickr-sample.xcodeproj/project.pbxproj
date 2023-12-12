@@ -11,6 +11,7 @@
 		853932AC2A81786100014A01 /* ContentViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 853932AB2A81786100014A01 /* ContentViewModelTests.swift */; };
 		854631FC2A35E1E100FE22E8 /* PhotosService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 854631FB2A35E1E100FE22E8 /* PhotosService.swift */; };
 		85A5D7112B2533B50040F06E /* ViewState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85A5D7102B2533B50040F06E /* ViewState.swift */; };
+		85A5D71E2B287B4E0040F06E /* SFSymbols+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85A5D71D2B287B4E0040F06E /* SFSymbols+Utils.swift */; };
 		85F3EB3A2A35A1F8006A893F /* flickr_sampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85F3EB392A35A1F8006A893F /* flickr_sampleApp.swift */; };
 		85F3EB3C2A35A1F8006A893F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85F3EB3B2A35A1F8006A893F /* ContentView.swift */; };
 		85F3EB3E2A35A1F9006A893F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 85F3EB3D2A35A1F9006A893F /* Assets.xcassets */; };
@@ -43,6 +44,7 @@
 		853932AB2A81786100014A01 /* ContentViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentViewModelTests.swift; sourceTree = "<group>"; };
 		854631FB2A35E1E100FE22E8 /* PhotosService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosService.swift; sourceTree = "<group>"; };
 		85A5D7102B2533B50040F06E /* ViewState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewState.swift; sourceTree = "<group>"; };
+		85A5D71D2B287B4E0040F06E /* SFSymbols+Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SFSymbols+Utils.swift"; sourceTree = "<group>"; };
 		85F3EB362A35A1F8006A893F /* flickr-sample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "flickr-sample.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		85F3EB392A35A1F8006A893F /* flickr_sampleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = flickr_sampleApp.swift; sourceTree = "<group>"; };
 		85F3EB3B2A35A1F8006A893F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -126,6 +128,14 @@
 			path = ViewModel;
 			sourceTree = "<group>";
 		};
+		85A5D71C2B287B3F0040F06E /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				85A5D71D2B287B4E0040F06E /* SFSymbols+Utils.swift */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
 		85F3EB2D2A35A1F8006A893F = {
 			isa = PBXGroup;
 			children = (
@@ -154,6 +164,7 @@
 				85A5D71A2B25E8C60040F06E /* ViewModel */,
 				85A5D7192B25E8BE0040F06E /* Model */,
 				85A5D7142B25E7CE0040F06E /* Service */,
+				85A5D71C2B287B3F0040F06E /* Utils */,
 				85F3EB402A35A1F9006A893F /* Preview Content */,
 				85F3EB6C2A35AADF006A893F /* Info.plist */,
 				85F3EB3F2A35A1F9006A893F /* flickr_sample.entitlements */,
@@ -322,6 +333,7 @@
 				854631FC2A35E1E100FE22E8 /* PhotosService.swift in Sources */,
 				853932AA2A814FE100014A01 /* CLLocationManagerProtocol.swift in Sources */,
 				85F3EB3C2A35A1F8006A893F /* ContentView.swift in Sources */,
+				85A5D71E2B287B4E0040F06E /* SFSymbols+Utils.swift in Sources */,
 				85F3EB3A2A35A1F8006A893F /* flickr_sampleApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -484,8 +496,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "flickr-sample/Info.plist";
-				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "We need your location in order to fetch images later on";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location in order to fetch images later on";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "We need your location in order to fetch images based on your latitude and longitude";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location in order to fetch images based on your latitude and longitude";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -525,8 +537,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "flickr-sample/Info.plist";
-				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "We need your location in order to fetch images later on";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location in order to fetch images later on";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "We need your location in order to fetch images based on your latitude and longitude";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location in order to fetch images based on your latitude and longitude";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;

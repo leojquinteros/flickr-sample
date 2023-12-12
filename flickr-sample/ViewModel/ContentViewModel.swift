@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 import CoreLocation
+import UIKit
 
 @MainActor
 class ContentViewModel: NSObject, ObservableObject {
@@ -60,6 +61,7 @@ class ContentViewModel: NSObject, ObservableObject {
     public func startUpdatingLocation() {
         locationManager.startUpdatingLocation()
         state = .loading
+        photosURL = []
     }
     
     public func resumeUpdatingLocation() {
@@ -73,10 +75,18 @@ class ContentViewModel: NSObject, ObservableObject {
     }
     
     public func updateLocationManager() {
-        handleStatus(locationManager.authorizationStatus)
+        handleLocationAuthorisation(status: locationManager.authorizationStatus)
     }
     
-    private func handleStatus(_ status: CLAuthorizationStatus) {
+    public func openAppSettings() {
+        if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
+            if UIApplication.shared.canOpenURL(settingsURL) {
+                UIApplication.shared.open(settingsURL, options: [:], completionHandler: nil)
+            }
+        }
+    }
+    
+    private func handleLocationAuthorisation(status: CLAuthorizationStatus) {
         switch status {
         case .authorizedAlways, .authorizedWhenInUse:
             state = .ready
@@ -119,6 +129,6 @@ extension ContentViewModel: CLLocationManagerDelegate {
     }
     
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
-        handleStatus(status)
+        handleLocationAuthorisation(status: status)
     }
 }

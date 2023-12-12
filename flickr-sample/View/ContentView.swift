@@ -17,7 +17,9 @@ struct ContentView: View {
             case .loading:
                 LoadingView()
             case .deniedLocation:
-                AllowLocationView()
+                AllowLocationView {
+                    viewModel.openAppSettings()
+                }
             case .error(let message):
                 ErrorView(message: message) {
                     viewModel.startUpdatingLocation()
@@ -27,8 +29,13 @@ struct ContentView: View {
                     viewModel.startUpdatingLocation()
                 }
             case .stopSharing:
-                StartButton(title: "Resume") {
-                    viewModel.resumeUpdatingLocation()
+                VStack {
+                    StartButton(title: "Restart") {
+                        viewModel.startUpdatingLocation()
+                    }
+                    StartButton(title: "Resume") {
+                        viewModel.resumeUpdatingLocation()
+                    }
                 }
             case .loaded(let photosURL):
                 NavigationStack {
@@ -71,7 +78,7 @@ private struct ErrorView: View {
     let action: () -> Void
     var body: some View {
         ContentUnavailableView {
-            Label("Unable to show photos", systemImage: "exclamationmark.icloud")
+            Label("Unable to show photos", symbol: .photosUnavailable)
         } description: {
             Text("Description: \(message)")
         } actions: {
@@ -83,9 +90,18 @@ private struct ErrorView: View {
 }
 
 private struct AllowLocationView: View {
+    let action: () -> Void
+    
     var body: some View {
-        Text("Please allow the app to track your location in Settings")
-            .font(.caption2)
+        ContentUnavailableView {
+            Label("Unable to show photos", symbol: .locationUnavailable)
+        } description: {
+            Text("Please allow the app to track your location on Settings")
+        } actions: {
+            Button("Open") {
+                action()
+            }
+        }
     }
 }
 
