@@ -11,7 +11,7 @@ import SwiftUI
 struct flickr_sampleApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView(viewModel: .init())
+            ContentView(viewModel: ContentViewModel())
         }
     }
 }
